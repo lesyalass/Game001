@@ -1,0 +1,7 @@
+#pragma once
+#include "SFML/Graphics.hpp"
+
+int main()
+{
+	return 0;
+}
