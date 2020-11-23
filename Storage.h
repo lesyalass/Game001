@@ -43,7 +43,7 @@ public:
 		}
 	}
 
-	void CreateObject(GameObject* object)
+	void AddObject(GameObject* object)      //CreateObject
 	{
 		head = new Node{ object, head };
 	}

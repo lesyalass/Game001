@@ -83,7 +83,7 @@ public:
 
 	const char operator [] (const int index) const
 	{
-		assert(index < this->len());
+		assert(index < this->len());        
 		return str[index];
 	}
 
@@ -97,7 +97,7 @@ public:
 	{
 		if (strSize != string.strSize)
 			return false;
-		for (int i = 0; i < strSize; i++)
+		for (int i = 0; i < this->len(); i++)
 			if (str[i] != string[i])
 				return false;
 		return true;
@@ -120,10 +120,11 @@ public:
 			memorySize = 2 * size;
 		}
 		strSize = size;
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size - 1; i++)
 		{
 			str[i] = string[i];
 		}
+		str[size - 1] = '\0';
 		return *this;
 	}
 

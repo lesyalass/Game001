@@ -2,6 +2,22 @@
 #include "Vector2f.h"
 #include "String.h"
 
+
+class Camera;
+class GameObject;
+class Sprite;
+class StdGameObject;
+class StorageImages;
+
+
+float max(float a, float b)
+{
+	if (a > b)
+		return a;
+	return b;
+}
+
+
 class StorageImages
 {
 	String name;
@@ -25,7 +41,7 @@ public:
 		sf::Image image;
 		for (int i = 0; i < numberOfImages; i++)
 		{
-			image.loadFromFile(namesOfFiles[i].c_str());
+			std::cout << image.loadFromFile(namesOfFiles[i].c_str()) << '\n';                                       //!!!!!!!!
 			images[i] = image;
 		}
 	}
@@ -57,6 +73,8 @@ public:
 		{
 			images[i] = stImages.images[i];
 		}
+
+		return *this;
 	}
 
 	String getName()
@@ -83,12 +101,12 @@ public:
 
 //	sf::RectangleShape shape;
 
-	sf::Image getImage(String nameStorage, const int index)
+	sf::Image* getImage(String nameStorage, const int index)
 	{
 		for (int i = 0; i < numberOfStorages; i++)
 		{
 			if (images[i].getName() == nameStorage)
-				return images[i].getImage(index);
+				return &images[i].getImage(index);
 		}
 		std::cout << "There is no image with name : " << nameStorage << std::endl;
 		assert(false);
@@ -96,7 +114,8 @@ public:
 
 	Sprite(StorageImages* images, int numberOfStorage, String nameFistStImages)
 	{
-		StorageImages* images = new StorageImages[numberOfStorage];
+		images = new StorageImages[numberOfStorage];
+		this->numberOfStorages = numberOfStorage;
 		for (int i = 0; i < numberOfStorage; i++)
 		{
 			this->images[i] = images[i];
@@ -108,7 +127,8 @@ public:
 
 	Sprite(String imagesName, String nameOfFile)
 	{
-		StorageImages* images = new StorageImages[1];
+		images = new StorageImages[1];
+		numberOfStorages = 1;
 		StorageImages image (imagesName, 1, &nameOfFile);
 		images[0] = image;
 
@@ -118,10 +138,6 @@ public:
 
 	~Sprite()
 	{
-		for (int i = 0; i < numberOfStorages; i++)
-		{
-			delete &images[i];
-		}
 		delete[] images;
 	}
 	/*
@@ -137,9 +153,6 @@ public:
 	*/
 };
 
-
-
-
 class GameObject
 {
 public:
@@ -148,7 +161,62 @@ public:
 
 	GameObject() {}
 
-	GameObject(Vector2f v, String str): position(v), name(str) {}
+	GameObject(Vector2f v, String str) : position(v), name(str) {}
+
+	virtual void draw(Camera* camera) {}
+};
+
+
+class Camera: public GameObject
+{
+	sf::RenderWindow window;
+	Vector2f velosity;
+	int sizeWindowX;
+	int sizeWindowY;
+	sf::Color windowColor;
+	sf::VideoMode videoMode;
+
+public:
+
+	Camera(String name, Vector2f position, int sizeWindowX = 1960, int sizeWindowY = 1080, sf::Color color = sf::Color(0,0,0))
+	{
+		this->name = name;
+		this->position = position;
+		sf::VideoMode videoMode(sizeWindowX, sizeWindowY);
+		windowColor = color;
+		sf::RenderWindow window(videoMode, name.c_str());
+	}
+
+	bool objectInDrawableSpace(sf::Vector2f pos, int charactSize)
+	{
+		return (pos.x > charactSize) && (pos.y > charactSize) && (pos.x < charactSize + sizeWindowX) && (pos.y > charactSize + sizeWindowY);
+	}
+
+	void draw(sf::Shape* shape, int charactSize)
+	{
+		sf::Vector2f shapePosition = shape->getPosition() - sf::Vector2f(position.x, position.y);
+		if (objectInDrawableSpace(shapePosition, charactSize))
+		{
+			shape->setPosition(shapePosition);
+			window.draw(*shape);
+		}
+	}
+
+	bool pollEvent(sf::Event& event)
+	{
+		return window.pollEvent(event);
+	}
+
+	void display()
+	{
+		window.display();
+		window.clear();
+	}
+
+	void displayWithoutClear()           // You need double draw background objects and 
+	{
+		window.display();
+	}
 };
 
 
@@ -159,26 +227,40 @@ class StdGameObject: public GameObject
 {
 	Sprite* sprite;
 	Vector2f* vertexs;
+	Vector2f size;
 	int numberOfVertex;
 	String nameCurrentImage;
 	int indexCurrentImage;
+	int characteristicSize;
 
 	sf::Texture texture;
 	sf::RectangleShape shape;
 
 public:
 
-	StdGameObject(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs, int numberOfVertex, String nameFistStImages)
+	void setSize(Vector2f size)
+	{
+		this->size = size;
+		shape.setSize(sf::Vector2f(size.x, size.y));
+		characteristicSize = max(size.x, size.y);
+	}
+
+	StdGameObject(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs, int numberOfVertex, String nameFistStImages, Vector2f size)
 	{
 		this->name = name;
 		this->position = position;
 		this->sprite = sprite;
 		this->numberOfVertex = numberOfVertex;
 		this->vertexs = new Vector2f[numberOfVertex];
+
 		for (int i = 0; i < numberOfVertex; i++)
 			this->vertexs[i] = vertexs[i];
-		texture.loadFromImage(sprite->getImage(nameFistStImages, 0));
+
+		texture.create(size.x, size.y);
+		texture.update(*(sprite->getImage(nameFistStImages, 0)));
 		shape.setTexture(&texture);
+
+		this->setSize(size);
 	}
 
 	StdGameObject(StdGameObject& gameObject)
@@ -189,8 +271,10 @@ public:
 		vertexs = new Vector2f[numberOfVertex];
 		for (int i = 0; i < numberOfVertex; i++)
 			this->vertexs[i] = vertexs[i];
-		texture.loadFromImage(sprite->getImage(nameCurrentImage, indexCurrentImage));
+		texture.loadFromImage(*(sprite->getImage(nameCurrentImage, indexCurrentImage)));
 		shape.setTexture(&texture);
+
+		this->setSize(gameObject.size);
 	}
 
 	~StdGameObject()
@@ -212,31 +296,25 @@ public:
 	{
 		nameCurrentImage = name;
 		indexCurrentImage = index;
-		sf::Image im = sprite->getImage(name, index);
+		sf::Image im = *(sprite->getImage(name, index));
 	}
 
 	void setCurrentImageIndex(int index)
 	{
 		indexCurrentImage = index;
-		sf::Image im = sprite->getImage(nameCurrentImage, index);
+		sf::Image im = *(sprite->getImage(nameCurrentImage, index));
 	}
 
 	void changeTexture(String nameStorage, const int index)
 	{
-		texture.loadFromImage(sprite->getImage(nameStorage, index));
+		texture.loadFromImage(*(sprite->getImage(nameStorage, index)));
 	}
-
-	void setSize(Vector2f size)
-	{
-		shape.setSize(sf::Vector2f(size.x, size.y));
-	}
-
-	/*
+	
 	void draw(Camera* camera)
 	{
-		sprite->changeTexture(nameCurrentImage, indexCurrentImage);
-		sprite->shape.setPosition(position.x, position.y);
-		.draw(sprite->shape);
+		this->changeTexture(nameCurrentImage, indexCurrentImage);
+		this->shape.setPosition(position.x, position.y);
+		camera->draw(&shape, characteristicSize);
 	}
-	*/
+	
 };
