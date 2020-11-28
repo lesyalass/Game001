@@ -25,6 +25,7 @@ class Storage
 {
 	Node* head = NULL;
 	Node* iter;
+	GameObject nul = GameObject{ Vector2f(0, 0), "NULL" };
 
 public:
 	Storage() :head(NULL), iter(head)
@@ -107,8 +108,7 @@ public:
 	{
 		if (iter == NULL)
 		{
-			GameObject res{ Vector2f(0, 0), "NULL" };
-			return res;
+			return nul;
 		}
 		GameObject& returnObject = *(iter->object);
 		iter = iter->next;

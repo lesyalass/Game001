@@ -57,6 +57,8 @@ public:
 		str = new char[memorySize];
 		for (int i = 0; i < strSize; ++i)
 			str[i] = string.str[i];
+
+		//std::cout << "constr1" << '\n';
 	}
 
 	String(const String& string, const int memorySizeP)
@@ -67,6 +69,8 @@ public:
 		str = new char[memorySize];
 		for (int i = 0; i < strSize; ++i)
 			str[i] = string.str[i];
+
+		//std::cout << "constr2" << '\n';
 	}
 
 	String(const int len)
@@ -78,7 +82,11 @@ public:
 
 	~String()
 	{
+		//std::cout << this->str  << '\n';
+
 		delete[] str;
+
+		//std::cout << "destr" << '\n';
 	}
 
 	const char operator [] (const int index) const
@@ -112,6 +120,8 @@ public:
 
 	String& operator = (const String& string)
 	{
+		//std::cout << "=" << '\n';
+
 		int size = string.strSize;
 		if (size > memorySize)
 		{

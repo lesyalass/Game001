@@ -41,8 +41,22 @@ public:
 		sf::Image image;
 		for (int i = 0; i < numberOfImages; i++)
 		{
-			std::cout << image.loadFromFile(namesOfFiles[i].c_str()) << '\n';                                       //!!!!!!!!
-			images[i] = image;
+			image.loadFromFile(namesOfFiles[i].c_str());                                     //!!!!!!!!
+			sf::Vector2u size = image.getSize();
+			int x = size.x;
+			int y = size.y;
+			images[i].create(x, y);
+			images[i].copy(image, 0, 0);
+
+			sf::Color c = images[i].getPixel(100, 100);
+			//std::cout << c.r << ' ' << c.b << ' ' << c.g << '\n';
+			//std::cout << 1 << '\n';
+
+			sf::Texture tx;
+			tx.create(x, y);
+			tx.update(images[i]);  
+			
+			//std::cout << 1 << '\n';                                                                                    //!!!!!!!!!!
 		}
 	}
 
@@ -82,9 +96,9 @@ public:
 		return name;
 	}
 
-	sf::Image getImage (const int index)
+	sf::Image* getImage (const int index)
 	{
-		return images[index];
+		return &images[index];
 	}
 };
 
@@ -103,10 +117,11 @@ public:
 
 	sf::Image* getImage(String nameStorage, const int index)
 	{
+		//std::cout << nameStorage << '\n';
 		for (int i = 0; i < numberOfStorages; i++)
 		{
 			if (images[i].getName() == nameStorage)
-				return &images[i].getImage(index);
+				return images[i].getImage(index);
 		}
 		std::cout << "There is no image with name : " << nameStorage << std::endl;
 		assert(false);
@@ -158,12 +173,21 @@ class GameObject
 public:
 	Vector2f position;
 	String name;
+	String nameCurrentImage = '0'; 
 
 	GameObject() {}
 
 	GameObject(Vector2f v, String str) : position(v), name(str) {}
 
 	virtual void draw(Camera* camera) {}
+
+	virtual void changeTexture(String nameStorage, const int index) {}
+
+	virtual void changeTexture() {}
+	
+	virtual void setCurrentImageIndex(int index) {}
+
+	virtual void setCurrentImage(String name, int index) {}
 };
 
 
@@ -174,7 +198,7 @@ class Camera: public GameObject
 	int sizeWindowX;
 	int sizeWindowY;
 	sf::Color windowColor;
-	sf::VideoMode videoMode;
+	//sf::VideoMode videoMode;
 
 public:
 
@@ -184,20 +208,35 @@ public:
 		this->position = position;
 		sf::VideoMode videoMode(sizeWindowX, sizeWindowY);
 		windowColor = color;
-		sf::RenderWindow window(videoMode, name.c_str());
+		window.create(videoMode, name.c_str());
+	}
+
+	void close()
+	{
+		window.close();
 	}
 
 	bool objectInDrawableSpace(sf::Vector2f pos, int charactSize)
 	{
-		return (pos.x > charactSize) && (pos.y > charactSize) && (pos.x < charactSize + sizeWindowX) && (pos.y > charactSize + sizeWindowY);
+		//std::cout << (pos.x > -charactSize);
+		//std::cout << (pos.y > -charactSize);
+		//std::cout << (pos.x < charactSize + sizeWindowX);
+		//std::cout << (pos.y > charactSize + sizeWindowY);
+		return (pos.x > -charactSize) && (pos.y > -charactSize) && (pos.x < charactSize + sizeWindowX) && (pos.y > charactSize + sizeWindowY);
 	}
 
-	void draw(sf::Shape* shape, int charactSize)
+	void draw(sf::Shape* shape, sf::Vector2f shapePosition, int charactSize)
 	{
-		sf::Vector2f shapePosition = shape->getPosition() - sf::Vector2f(position.x, position.y);
-		if (objectInDrawableSpace(shapePosition, charactSize))
+		sf::Vector2f shapePositionInCamera = shapePosition - sf::Vector2f(position.x, position.y);
+
+		//std::cout << shapePositionInCamera << '\n';
+		//std::cout << ":::" << objectInDrawableSpace(shapePositionInCamera, charactSize) << '\n';
+
+		//std::cout << ".draw" << '\n';
+
+		if (objectInDrawableSpace(shapePositionInCamera, charactSize))
 		{
-			shape->setPosition(shapePosition);
+			shape->setPosition(shapePositionInCamera);
 			window.draw(*shape);
 		}
 	}
@@ -229,7 +268,7 @@ class StdGameObject: public GameObject
 	Vector2f* vertexs;
 	Vector2f size;
 	int numberOfVertex;
-	String nameCurrentImage;
+	//String nameCurrentImage;
 	int indexCurrentImage;
 	int characteristicSize;
 
@@ -237,6 +276,8 @@ class StdGameObject: public GameObject
 	sf::RectangleShape shape;
 
 public:
+
+	String nameCurrentImage;
 
 	void setSize(Vector2f size)
 	{
@@ -247,6 +288,8 @@ public:
 
 	StdGameObject(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs, int numberOfVertex, String nameFistStImages, Vector2f size)
 	{
+		//std::cout << "StdGameObject1" << '\n';
+
 		this->name = name;
 		this->position = position;
 		this->sprite = sprite;
@@ -255,6 +298,12 @@ public:
 
 		for (int i = 0; i < numberOfVertex; i++)
 			this->vertexs[i] = vertexs[i];
+
+		nameCurrentImage = nameFistStImages;
+
+		//std::cout << nameCurrentImage << '\n';
+
+		indexCurrentImage = 0;
 
 		texture.create(size.x, size.y);
 		texture.update(*(sprite->getImage(nameFistStImages, 0)));
@@ -265,12 +314,18 @@ public:
 
 	StdGameObject(StdGameObject& gameObject)
 	{
+		std::cout << "StdGameObject2" << '\n';
+
 		delete[] vertexs;
 		sprite = gameObject.sprite;
 		numberOfVertex = gameObject.numberOfVertex;
 		vertexs = new Vector2f[numberOfVertex];
 		for (int i = 0; i < numberOfVertex; i++)
 			this->vertexs[i] = vertexs[i];
+
+		this->nameCurrentImage = nameCurrentImage;
+		this->indexCurrentImage = indexCurrentImage;
+
 		texture.loadFromImage(*(sprite->getImage(nameCurrentImage, indexCurrentImage)));
 		shape.setTexture(&texture);
 
@@ -279,6 +334,8 @@ public:
 
 	~StdGameObject()
 	{
+		std::cout << "dStdGameObject : " << name << '\n';
+
 		delete[] vertexs;
 	}
 
@@ -288,12 +345,16 @@ public:
 		sprite = gameObject.sprite;
 		numberOfVertex = gameObject.numberOfVertex;
 		vertexs = new Vector2f[numberOfVertex];
+		nameCurrentImage = gameObject.nameCurrentImage;
+		indexCurrentImage = gameObject.indexCurrentImage;
 		for (int i = 0; i < numberOfVertex; i++)
 			this->vertexs[i] = vertexs[i];
 	}
 
 	void setCurrentImage(String name, int index)
 	{
+		std::cout << "setCurrentImage" << '\n';
+
 		nameCurrentImage = name;
 		indexCurrentImage = index;
 		sf::Image im = *(sprite->getImage(name, index));
@@ -301,20 +362,33 @@ public:
 
 	void setCurrentImageIndex(int index)
 	{
+		std::cout << "setCurrentImageIndex" << '\n';
+
 		indexCurrentImage = index;
 		sf::Image im = *(sprite->getImage(nameCurrentImage, index));
 	}
 
 	void changeTexture(String nameStorage, const int index)
 	{
+		std::cout << "changeTexture" << '\n';
+
+		nameCurrentImage = nameStorage;
+		indexCurrentImage = index;
 		texture.loadFromImage(*(sprite->getImage(nameStorage, index)));
+	}
+
+	void changeTexture()
+	{
+		texture.loadFromImage(*(sprite->getImage(nameCurrentImage, indexCurrentImage)));
 	}
 	
 	void draw(Camera* camera)
 	{
-		this->changeTexture(nameCurrentImage, indexCurrentImage);
-		this->shape.setPosition(position.x, position.y);
-		camera->draw(&shape, characteristicSize);
+		//std::cout << nameCurrentImage << '\n';
+
+		//this->changeTexture(nameCurrentImage, indexCurrentImage);
+		//this->shape.setPosition(position.x, position.y);
+		camera->draw(&shape, sf::Vector2f(position.x, position.y) , characteristicSize);
 	}
 	
 };
