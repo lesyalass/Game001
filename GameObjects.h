@@ -127,9 +127,9 @@ public:
 		assert(false);
 	}
 
-	Sprite(StorageImages* images, int numberOfStorage, String nameFistStImages)
+	Sprite(StorageImages* images, int numberOfStorage)
 	{
-		images = new StorageImages[numberOfStorage];
+		this->images = new StorageImages[numberOfStorage];
 		this->numberOfStorages = numberOfStorage;
 		for (int i = 0; i < numberOfStorage; i++)
 		{
@@ -173,7 +173,6 @@ class GameObject
 public:
 	Vector2f position;
 	String name;
-	String nameCurrentImage = '0'; 
 
 	GameObject() {}
 
@@ -268,7 +267,7 @@ class StdGameObject: public GameObject
 	Vector2f* vertexs;
 	Vector2f size;
 	int numberOfVertex;
-	//String nameCurrentImage;
+	String nameCurrentImage;
 	int indexCurrentImage;
 	int characteristicSize;
 
@@ -276,8 +275,6 @@ class StdGameObject: public GameObject
 	sf::RectangleShape shape;
 
 public:
-
-	String nameCurrentImage;
 
 	void setSize(Vector2f size)
 	{
@@ -379,6 +376,8 @@ public:
 
 	void changeTexture()
 	{
+		std::cout << "changeTexture" << '\n';
+
 		texture.loadFromImage(*(sprite->getImage(nameCurrentImage, indexCurrentImage)));
 	}
 	
