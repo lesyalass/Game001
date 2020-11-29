@@ -57,7 +57,7 @@ int main()
 		storage.stepIteration().draw(&camera);
 		camera.display();
 
-		storage["Elve"].animation("Test paint", 5, 1);
+		storage["Elve"].animation(1);
 		//camera.display();
 	};
 

@@ -210,7 +210,7 @@ public:
 
 	//virtual void setCurrentImage(String name, int index) {}
 
-	virtual void animation(String nameImagesStorage, float timeBeetweenImages, float timeBeetweenFrame) {}
+	virtual void animation(float timeBeetweenFrame) {}
 };
 
 
@@ -305,6 +305,7 @@ class StdGameObject: public GameObject
 	sf::Texture texture;
 	sf::RectangleShape shape;
 	float timeFromLastChangeImage = 0;
+	float timeBeetweenImages = 5;
 
 
 	Vector2f velosity;
@@ -431,20 +432,13 @@ public:
 		camera->draw(&shape, sf::Vector2f(position.x, position.y) , characteristicSize);
 	}
 	
-	void animation(String nameImagesStorage, float timeBeetweenImages, float timeBeetweenFrame) 
+	void animation(float timeBeetweenFrame) 
 	{
-		if (nameCurrentImage != nameImagesStorage)
-		{
-			setCurrentImage(nameImagesStorage, 0);
-			timeFromLastChangeImage = 0;
-			this->changeTexture();
-			return;
-		}
 		timeFromLastChangeImage += timeBeetweenFrame;
 		if (timeFromLastChangeImage > timeBeetweenImages)
 		{
 			timeFromLastChangeImage = 0;
-			if (sprite->getSizeStorage(nameImagesStorage) - 1 <= indexCurrentImage)
+			if (sprite->getSizeStorage(nameCurrentImage) - 1 <= indexCurrentImage)
 				indexCurrentImage = -1;
 			setCurrentImageIndex(indexCurrentImage + 1);
 			this->changeTexture();
