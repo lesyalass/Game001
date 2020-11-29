@@ -48,13 +48,13 @@ public:
 			images[i].create(x, y);
 			images[i].copy(image, 0, 0);
 
-			sf::Color c = images[i].getPixel(100, 100);
+			//sf::Color c = images[i].getPixel(100, 100);
 			//std::cout << c.r << ' ' << c.b << ' ' << c.g << '\n';
 			//std::cout << 1 << '\n';
 
-			sf::Texture tx;
-			tx.create(x, y);
-			tx.update(images[i]);  
+			//sf::Texture tx;
+			//tx.create(x, y);
+			//tx.update(images[i]);  
 			
 			//std::cout << 1 << '\n';                                                                                    //!!!!!!!!!!
 		}
@@ -98,7 +98,14 @@ public:
 
 	sf::Image* getImage (const int index)
 	{
+		//std::cout << index << '\n';
+		assert(index < numberOfImages);
 		return &images[index];
+	}
+
+	int getNumberOfImages()
+	{
+		return numberOfImages;
 	}
 };
 
@@ -121,7 +128,9 @@ public:
 		for (int i = 0; i < numberOfStorages; i++)
 		{
 			if (images[i].getName() == nameStorage)
+			{
 				return images[i].getImage(index);
+			}
 		}
 		std::cout << "There is no image with name : " << nameStorage << std::endl;
 		assert(false);
@@ -155,6 +164,19 @@ public:
 	{
 		delete[] images;
 	}
+
+	int getSizeStorage(String nameStorage)
+	{
+		for (int i = 0; i < numberOfStorages; i++)
+		{
+			if (images[i].getName() == nameStorage)
+			{
+				return images[i].getNumberOfImages();
+			}
+		}
+		std::cout << "There is no image with name : " << nameStorage << std::endl;
+		assert(false);
+	}
 	/*
 	void changeTexture(String nameStorage, const int index)
 	{
@@ -180,13 +202,15 @@ public:
 
 	virtual void draw(Camera* camera) {}
 
-	virtual void changeTexture(String nameStorage, const int index) {}
+	//virtual void changeTexture(String nameStorage, const int index) {}
 
-	virtual void changeTexture() {}
+	//virtual void changeTexture() {}
 	
-	virtual void setCurrentImageIndex(int index) {}
+	//virtual void setCurrentImageIndex(int index) {}
 
-	virtual void setCurrentImage(String name, int index) {}
+	//virtual void setCurrentImage(String name, int index) {}
+
+	virtual void animation(String nameImagesStorage, float timeBeetweenImages, float timeBeetweenFrame) {}
 };
 
 
@@ -255,6 +279,16 @@ public:
 	{
 		window.display();
 	}
+
+	void setFrameralLimit(int fps)
+	{
+		window.setFramerateLimit(fps);
+	}
+
+	bool isOpen()
+	{
+		return window.isOpen();
+	}
 };
 
 
@@ -263,16 +297,23 @@ public:
 
 class StdGameObject: public GameObject
 {
+
 	Sprite* sprite;
-	Vector2f* vertexs;
-	Vector2f size;
-	int numberOfVertex;
 	String nameCurrentImage;
 	int indexCurrentImage;
 	int characteristicSize;
-
 	sf::Texture texture;
 	sf::RectangleShape shape;
+	float timeFromLastChangeImage = 0;
+
+
+	Vector2f velosity;
+	Vector2f changeImpulse;
+	float mass;
+	Vector2f size;
+	Vector2f* vertexs;
+	int numberOfVertex;
+
 
 public:
 
@@ -303,7 +344,7 @@ public:
 		indexCurrentImage = 0;
 
 		texture.create(size.x, size.y);
-		texture.update(*(sprite->getImage(nameFistStImages, 0)));
+		texture.update(*(sprite->getImage(nameFistStImages, 0)));   //!!!!!
 		shape.setTexture(&texture);
 
 		this->setSize(size);
@@ -331,7 +372,7 @@ public:
 
 	~StdGameObject()
 	{
-		std::cout << "dStdGameObject : " << name << '\n';
+		//std::cout << "dStdGameObject : " << name << '\n';
 
 		delete[] vertexs;
 	}
@@ -350,7 +391,7 @@ public:
 
 	void setCurrentImage(String name, int index)
 	{
-		std::cout << "setCurrentImage" << '\n';
+		//std::cout << "setCurrentImage" << '\n';
 
 		nameCurrentImage = name;
 		indexCurrentImage = index;
@@ -359,7 +400,7 @@ public:
 
 	void setCurrentImageIndex(int index)
 	{
-		std::cout << "setCurrentImageIndex" << '\n';
+		//std::cout << "setCurrentImageIndex" << '\n';
 
 		indexCurrentImage = index;
 		sf::Image im = *(sprite->getImage(nameCurrentImage, index));
@@ -367,7 +408,7 @@ public:
 
 	void changeTexture(String nameStorage, const int index)
 	{
-		std::cout << "changeTexture" << '\n';
+		//std::cout << "changeTexture" << '\n';
 
 		nameCurrentImage = nameStorage;
 		indexCurrentImage = index;
@@ -376,7 +417,7 @@ public:
 
 	void changeTexture()
 	{
-		std::cout << "changeTexture" << '\n';
+		//std::cout << "changeTexture" << '\n';
 
 		texture.loadFromImage(*(sprite->getImage(nameCurrentImage, indexCurrentImage)));
 	}
@@ -390,4 +431,34 @@ public:
 		camera->draw(&shape, sf::Vector2f(position.x, position.y) , characteristicSize);
 	}
 	
+	void animation(String nameImagesStorage, float timeBeetweenImages, float timeBeetweenFrame) 
+	{
+		if (nameCurrentImage != nameImagesStorage)
+		{
+			setCurrentImage(nameImagesStorage, 0);
+			timeFromLastChangeImage = 0;
+			this->changeTexture();
+			return;
+		}
+		timeFromLastChangeImage += timeBeetweenFrame;
+		if (timeFromLastChangeImage > timeBeetweenImages)
+		{
+			timeFromLastChangeImage = 0;
+			if (sprite->getSizeStorage(nameImagesStorage) - 1 <= indexCurrentImage)
+				indexCurrentImage = -1;
+			setCurrentImageIndex(indexCurrentImage + 1);
+			this->changeTexture();
+			return;
+		}
+	}
+
+	bool isCollide(GameObject& gObj)
+	{
+
+	}
+
+	void resolutionCollision()
+	{
+
+	}
 };

@@ -24,6 +24,7 @@ int main()
 
 	Camera camera("My game", Vector2f(0, 0));
 	storage.AddObject(&camera);
+	camera.setFrameralLimit(60);
 
 	//Sprite sp("Test paint", "007.png");
 
@@ -32,13 +33,13 @@ int main()
 	paints[1] = "008.jpg";
 
 	StorageImages stIm("Test paint", 2, paints);
+	//std::cout << stIm.getImage(0)->getSize().x << stIm.getImage(0)->getSize().y << '\n';
 
 	Sprite sp(&stIm, 1);
 
 	Vector2f vertex [4] { Vector2f(0, 0), Vector2f(0,410), Vector2f(241, 410), Vector2f(241, 0) };
 
 	StdGameObject Elve("Elve", Vector2f(400, 600), &sp, vertex, 4, "Test paint", Vector2f(241, 410));
-
 	storage.AddObject(&Elve);
 
 	storage.newSeriesIteration();
@@ -47,29 +48,21 @@ int main()
 
 	int i = 0;
 
-	while (true)
+	while (camera.isOpen())
 	{
 		i++;
 		handlingEvent(&camera);
-		storage["Elve"].changeTexture();
-
+	
 		storage.newSeriesIteration();
 		storage.stepIteration().draw(&camera);
 		camera.display();
 
-		if (i == 5)
-		{
-			storage[0].setCurrentImage("Test paint", 1);   
-		}
-
-		if (i == 10)
-		{
-			i = 0;
-
-			storage["Elve"].setCurrentImage("Test paint", 0);
-		}
+		storage["Elve"].animation("Test paint", 5, 1);
 		//camera.display();
 	};
 
 	return 0;
 }
+
+
+//window.setFramerateLimit(60);
