@@ -99,6 +99,7 @@ public:
 		return res;
 	}
 
+	/*
 	void newSeriesIteration()
 	{
 		iter = head;
@@ -114,6 +115,7 @@ public:
 		iter = iter->next;
 		return returnObject;
 	}
+	*/
 
 	int len()
 	{
@@ -126,16 +128,40 @@ public:
 		}
 		return i;
 	}
+
+	friend class Iterator;
+};
+
+class Iterator
+{
+	Node* iter;
+	GameObject nul = GameObject{ Vector2f(0, 0), "NULL" };
+public:
+	Iterator(Storage* st)
+	{
+		iter = st->head;
+	}
+
+	GameObject& stepIteration()
+	{
+		if (iter == NULL)
+		{
+			return nul;
+		}
+		GameObject& returnObject = *(iter->object);
+		iter = iter->next;
+		return returnObject;
+	}
 };
 
 std::ostream& operator << (std::ostream& streamP, Storage& stor)
 {
-	stor.newSeriesIteration();
-	GameObject object = stor.stepIteration();
+	Iterator iter(&stor);
+	GameObject object = iter.stepIteration();
 	while (object.name != "NULL")
 	{
 		streamP << object << std::endl;
-		object = stor.stepIteration();
+		object = iter.stepIteration();
 	}
 	return streamP;
 }

@@ -106,6 +106,11 @@ struct Vector2f
         assert(this->mod());
         return (*this) / this->mod();
     }
+
+    int vectComp(Vector2f v)
+    {
+        return (x * v.y - y * v.x);
+    }
 };
 
 Vector2f operator * (float f, Vector2f v)

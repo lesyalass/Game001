@@ -19,48 +19,117 @@ int main()
 {
 	Storage storage;
 
-	//sf::Texture tx;
-	//std::cout << tx.getMaximumSize() << std::endl;
-
 	Camera camera("My game", Vector2f(0, 0));
 	storage.AddObject(&camera);
 	camera.setFrameralLimit(60);
 
-	//Sprite sp("Test paint", "007.png");
 
-	String paints [2];
-	paints[0] = "007.png";
-	paints[1] = "008.jpg";
 
-	StorageImages stIm("Test paint", 2, paints);
-	//std::cout << stIm.getImage(0)->getSize().x << stIm.getImage(0)->getSize().y << '\n';
+	Vector2f downWallVertexs[248];
+	for (int i = 0; i < 248; i++)
+	{
+		downWallVertexs[i] = Vector2f(8 * i, 1080);
+	}
+	Wall downWall("downWall", Vector2f(0, 1080), downWallVertexs, 248, Vector2f(1980, 0), 10000);
+	storage.AddObject(&downWall);
+
+	Vector2f upWallVertexs[248];
+	for (int i = 0; i < 248; i++)
+	{
+		upWallVertexs[i] = Vector2f(8 * i, 0);
+	}
+	Wall upWall("upWall", Vector2f(0, 0), upWallVertexs, 248, Vector2f(1980, 0), 10000);
+	storage.AddObject(&upWall);
+
+	Vector2f leftWallVertexs[135];
+	for (int i = 0; i < 135; i++)
+	{
+		leftWallVertexs[i] = Vector2f(0, 8*i);
+	}
+	Wall leftWall("leftWall", Vector2f(0, 0), leftWallVertexs, 248, Vector2f(0, 1080), 10000);
+	storage.AddObject(&leftWall);
+
+	Vector2f rightWallVertexs[135];
+	for (int i = 0; i < 248; i++)
+	{
+		rightWallVertexs[i] = Vector2f(1980, 8*i);
+	}
+	Wall rightWall("rightWall", Vector2f(1980, 0), rightWallVertexs, 248, Vector2f(0, 1080), 10000);
+	storage.AddObject(&rightWall);
+
+	std::cout << rightWall.name << '\n';
+
+
+
+	String paints[1];
+	paints[0] = "036.png";
+
+	StorageImages stIm("Test paint", 1, paints);
 
 	Sprite sp(&stIm, 1);
 
-	Vector2f vertex [4] { Vector2f(0, 0), Vector2f(0,410), Vector2f(241, 410), Vector2f(241, 0) };
+	Sprite nulll();
 
-	StdGameObject Elve("Elve", Vector2f(400, 600), &sp, vertex, 4, "Test paint", Vector2f(241, 410));
+	Vector2f vertex[16]{ Vector2f(0,  0),  Vector2f(0,  16), Vector2f(0,  32), Vector2f(0,  48),
+						   Vector2f(0,  64), Vector2f(8,  64), Vector2f(16, 64), Vector2f(24, 64),
+						   Vector2f(32, 64), Vector2f(32, 48), Vector2f(32, 32), Vector2f(32, 16),
+						   Vector2f(32, 0),  Vector2f(24, 0),  Vector2f(16, 0),  Vector2f(8,   0) };
+
+	StdGameObject Elve ("Elve",  Vector2f(354, 435), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	StdGameObject Elve1("Elve1", Vector2f(379, 475), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+
+	Elve.setVelosity(Vector2f(1, 0));
+	Elve1.setVelosity(Vector2f(-1, 0));
+
 	storage.AddObject(&Elve);
+	storage.AddObject(&Elve1);
 
-	storage.newSeriesIteration();
-	storage.stepIteration().draw(&camera);
-	camera.display();
+	Vector2f g (0, 10);
 
-	int i = 0;
+	sf::Clock clock;
+	int time = clock.getElapsedTime().asMilliseconds() + 400;
+	srand(time);
+
+	float time1 = clock.getElapsedTime().asSeconds();
+	float time2 = clock.getElapsedTime().asSeconds();
+
+	float dt;
 
 	while (camera.isOpen())
 	{
-		i++;
+		time1 = clock.getElapsedTime().asSeconds();
+		dt = time1 - time2;
+		//std::cout << 1.0 / (time1 - time2);
+		time2 = time1;
+		//std::cout << "/n";
+
 		handlingEvent(&camera);
 	
-		storage.newSeriesIteration();
-		storage.stepIteration().draw(&camera);
+		Iterator iter(&storage);
+		while (true)
+		{
+			GameObject& gameObject = iter.stepIteration();
+			if (gameObject.name == "NULL")
+				break;
+			gameObject.draw(&camera);
+			gameObject.animation(dt);
+
+			gameObject.nullChangeImpulse();
+			Iterator iter1(&storage);
+			while (true)
+			{
+				GameObject& gObj = iter1.stepIteration();
+				if (gObj.name == "NULL")
+					break;
+				Vector2f v = gameObject.isCollide(gObj);
+				gameObject.resolutionCollision(gObj, v);
+			}
+			gameObject.gravitation(g, dt);
+			gameObject.move(dt);
+			gameObject.changeVelosity();
+		}
 		camera.display();
-
-		storage["Elve"].animation(1);
-		//camera.display();
 	};
-
 	return 0;
 }
 
