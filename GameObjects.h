@@ -145,8 +145,6 @@ public:
 		assert(false);
 	}
 
-	Sprite() {};
-
 	Sprite(StorageImages* images, int numberOfStorage)
 	{
 		this->images = new StorageImages[numberOfStorage];
@@ -207,11 +205,13 @@ protected:
 	Vector2f* vertexs;
 	int numberOfVertexs = 0;
 	Vector2f size = Vector2f(0, 0);
-	Vector2f velosity;
-	float mass;
+	Vector2f velosity = Vector2f(0, 0);
+	float mass = 1;
 public:
 	Vector2f position;
 	String name;
+
+	Vector2f changeImpulse = Vector2f(0, 0);
 	
 	//Vector2f rightBottomCorrow;
 
@@ -367,7 +367,7 @@ class StdGameObject: public GameObject
 
 
 	//Vector2f velosity;
-	Vector2f changeImpulse = Vector2f(0, 0);
+	//Vector2f changeImpulse = Vector2f(0, 0);
 	//float mass;
 	//Vector2f size;
 	Vector2f centerMass;                    
@@ -551,7 +551,7 @@ public:
 			bool flag = true;
 			for (int numberGObjvertex = 1; numberGObjvertex < gObjNumberOfVertexs; numberGObjvertex++)
 			{
-				std::cout << gObj.name << '\n';
+				//std::cout << gObj.name << '\n';
 				Vector2f v1 =  gObj.getPositionVertex(numberGObjvertex) - gObj.getPositionVertex(numberGObjvertex - 1);
 				Vector2f v2 = this->getPositionVertex(numberVertex)     - gObj.getPositionVertex(numberGObjvertex - 1);
 
@@ -563,8 +563,8 @@ public:
 					break;
 				}
 			}
-			Vector2f v1 =  gObj.getPositionVertex(0)            - gObj.getPositionVertex(numberOfVertexs - 1);
-			Vector2f v2 = this->getPositionVertex(numberVertex) - gObj.getPositionVertex(numberOfVertexs - 1);
+			Vector2f v1 =  gObj.getPositionVertex(0)            - gObj.getPositionVertex(gObjNumberOfVertexs - 1);
+			Vector2f v2 = this->getPositionVertex(numberVertex) - gObj.getPositionVertex(gObjNumberOfVertexs - 1);
 
 			if (v1.vectComp(v2) > 0)
 			{
@@ -577,6 +577,9 @@ public:
 				vectorCollision += (this->getVertex(numberVertex) - centerMass).norm();
 			}
 		}
+
+		if (vectorCollision.mod() == 0)
+			return vectorCollision;
 
 		return (-1) * vectorCollision.norm();
 	}

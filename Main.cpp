@@ -24,41 +24,41 @@ int main()
 	camera.setFrameralLimit(60);
 
 
-
-	Vector2f downWallVertexs[248];
-	for (int i = 0; i < 248; i++)
-	{
-		downWallVertexs[i] = Vector2f(8 * i, 1080);
-	}
-	Wall downWall("downWall", Vector2f(0, 1080), downWallVertexs, 248, Vector2f(1980, 0), 10000);
+	
+	Vector2f downWallVertexs[4];
+	downWallVertexs[0] = Vector2f(0, 0);
+	downWallVertexs[1] = Vector2f(0, 400);
+	downWallVertexs[2] = Vector2f(1980, 400);
+	downWallVertexs[3] = Vector2f(1980, 0);
+	Wall downWall("downWall", Vector2f(0, 1080), downWallVertexs, 4, Vector2f(1980, 0), 10000);
 	storage.AddObject(&downWall);
 
-	Vector2f upWallVertexs[248];
-	for (int i = 0; i < 248; i++)
-	{
-		upWallVertexs[i] = Vector2f(8 * i, 0);
-	}
-	Wall upWall("upWall", Vector2f(0, 0), upWallVertexs, 248, Vector2f(1980, 0), 10000);
+	Vector2f upWallVertexs[4];
+	upWallVertexs[0] = Vector2f(0, 0);
+	upWallVertexs[1] = Vector2f(1980, 0);
+	upWallVertexs[2] = Vector2f(1980, 400);
+	upWallVertexs[3] = Vector2f(0, 400);
+	Wall upWall("upWall", Vector2f(0, 0), upWallVertexs, 4, Vector2f(1980, 0), 10000);
 	storage.AddObject(&upWall);
 
-	Vector2f leftWallVertexs[135];
-	for (int i = 0; i < 135; i++)
-	{
-		leftWallVertexs[i] = Vector2f(0, 8*i);
-	}
-	Wall leftWall("leftWall", Vector2f(0, 0), leftWallVertexs, 248, Vector2f(0, 1080), 10000);
+	Vector2f leftWallVertexs[4];
+	leftWallVertexs[0] = Vector2f(0, 0);
+	leftWallVertexs[1] = Vector2f(-400, 0);
+	leftWallVertexs[2] = Vector2f(-400, 1080);
+	leftWallVertexs[3] = Vector2f(0, 1080);
+	Wall leftWall("leftWall", Vector2f(0, 0), leftWallVertexs, 4, Vector2f(0, 1080), 10000);
 	storage.AddObject(&leftWall);
 
-	Vector2f rightWallVertexs[135];
-	for (int i = 0; i < 248; i++)
-	{
-		rightWallVertexs[i] = Vector2f(1980, 8*i);
-	}
-	Wall rightWall("rightWall", Vector2f(1980, 0), rightWallVertexs, 248, Vector2f(0, 1080), 10000);
+	Vector2f rightWallVertexs[4];
+	rightWallVertexs[0] = Vector2f(0, 0);
+	rightWallVertexs[1] = Vector2f(0, 1080);
+	rightWallVertexs[2] = Vector2f(400, 1080);
+	rightWallVertexs[3] = Vector2f(400, 0);
+	Wall rightWall("rightWall", Vector2f(1980, 0), rightWallVertexs, 4, Vector2f(0, 1080), 10000);
 	storage.AddObject(&rightWall);
 
-	std::cout << rightWall.name << '\n';
-
+	//std::cout << rightWall.name << '\n';
+	
 
 
 	String paints[1];
@@ -75,15 +75,18 @@ int main()
 						   Vector2f(32, 64), Vector2f(32, 48), Vector2f(32, 32), Vector2f(32, 16),
 						   Vector2f(32, 0),  Vector2f(24, 0),  Vector2f(16, 0),  Vector2f(8,   0) };
 
-	StdGameObject Elve ("Elve",  Vector2f(354, 435), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
-	StdGameObject Elve1("Elve1", Vector2f(379, 475), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	StdGameObject Elve ("Elve",  Vector2f(415, 587), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	StdGameObject Elve1("Elve1", Vector2f(400, 478), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
 
-	Elve.setVelosity(Vector2f(1, 0));
-	Elve1.setVelosity(Vector2f(-1, 0));
+	Elve.setVelosity(Vector2f(30, 0));
+	Elve1.setVelosity(Vector2f(-30, 0));
 
 	storage.AddObject(&Elve);
 	storage.AddObject(&Elve1);
 
+	//std::cout << Elve.isCollide(downWall);
+
+	
 	Vector2f g (0, 10);
 
 	sf::Clock clock;
@@ -99,12 +102,14 @@ int main()
 	{
 		time1 = clock.getElapsedTime().asSeconds();
 		dt = time1 - time2;
-		//std::cout << 1.0 / (time1 - time2);
+		std::cout << 1.0 / (time1 - time2);
 		time2 = time1;
-		//std::cout << "/n";
+		std::cout << "\n";
 
 		handlingEvent(&camera);
-	
+		
+		//std::cout << storage["Elve"].isCollide(storage["downWall"]) << '\n';
+
 		Iterator iter(&storage);
 		while (true)
 		{
@@ -113,7 +118,14 @@ int main()
 				break;
 			gameObject.draw(&camera);
 			gameObject.animation(dt);
+		}
 
+		Iterator iter2(&storage);
+		while (true)
+		{
+			GameObject& gameObject = iter2.stepIteration();
+			if (gameObject.name == "NULL")
+				break;
 			gameObject.nullChangeImpulse();
 			Iterator iter1(&storage);
 			while (true)
@@ -123,13 +135,23 @@ int main()
 					break;
 				Vector2f v = gameObject.isCollide(gObj);
 				gameObject.resolutionCollision(gObj, v);
+				//std::cout << gameObject.name << ' ' << gameObject.changeImpulse << '\n';
 			}
+		}
+
+		Iterator iter3(&storage);
+		while(true)
+		{
+			GameObject& gameObject = iter3.stepIteration();
+			if (gameObject.name == "NULL")
+				break;
 			gameObject.gravitation(g, dt);
 			gameObject.move(dt);
 			gameObject.changeVelosity();
 		}
 		camera.display();
 	};
+	
 	return 0;
 }
 
