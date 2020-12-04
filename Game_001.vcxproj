@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjects.h" />
+    <ClInclude Include="Logic.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="Vector2f.h" />

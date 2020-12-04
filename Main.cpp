@@ -4,6 +4,7 @@
 #include "Storage.h"
 #include "String.h"
 #include "Vector2f.h"
+#include "Logic.h"
 
 void handlingEvent(Camera* camera)
 {
@@ -68,24 +69,55 @@ int main()
 
 	Sprite sp(&stIm, 1);
 
-	Sprite nulll();
-
-	Vector2f vertex[16]{ Vector2f(0,  0),  Vector2f(0,  16), Vector2f(0,  32), Vector2f(0,  48),
+	Vector2f vertex[16]{   Vector2f(0,  0),  Vector2f(0,  16), Vector2f(0,  32), Vector2f(0,  48),
 						   Vector2f(0,  64), Vector2f(8,  64), Vector2f(16, 64), Vector2f(24, 64),
 						   Vector2f(32, 64), Vector2f(32, 48), Vector2f(32, 32), Vector2f(32, 16),
 						   Vector2f(32, 0),  Vector2f(24, 0),  Vector2f(16, 0),  Vector2f(8,   0) };
 
-	StdGameObject Elve ("Elve",  Vector2f(415, 587), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
-	StdGameObject Elve1("Elve1", Vector2f(400, 478), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	Player Elve ("Elve",  Vector2f(415, 587), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
 
 	Elve.setVelosity(Vector2f(30, 0));
-	Elve1.setVelosity(Vector2f(-30, 0));
 
 	storage.AddObject(&Elve);
-	storage.AddObject(&Elve1);
 
-	//std::cout << Elve.isCollide(downWall);
 
+	Knight knight0("knight0", Vector2f(100, 500), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	Knight knight1("knight1", Vector2f(200, 100), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	Knight knight2("knight2", Vector2f(300, 800), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	Knight knight3("knight3", Vector2f(400, 900), &sp, vertex, 16, "Test paint", Vector2f(32, 64), Vector2f(16, 32), 1);
+	
+	storage.AddObject(&knight0);
+	storage.AddObject(&knight1);
+	storage.AddObject(&knight2);
+	storage.AddObject(&knight3);
+
+
+	String namesPaintsCube[1];
+	namesPaintsCube[0] = "Cube.png";
+
+	StorageImages stImCube("Cube Images", 1, namesPaintsCube);
+
+	Sprite spCube(&stImCube, 1);
+
+	Vector2f vertexCube[4]{  Vector2f(0,  0) , Vector2f(0,  32),  Vector2f (32, 32), Vector2f(32, 0)};
+
+	StationaryCube cube0("Cube1", Vector2f(539, 687), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+	StationaryCube cube1("Cube2", Vector2f(600, 800), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+	StationaryCube cube2("Cube3", Vector2f(1200, 700), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+	StationaryCube cube3("Cube4", Vector2f(1800, 500), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+	StationaryCube cube4("Cube5", Vector2f(800, 900), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+	StationaryCube cube5("Cube6", Vector2f(700, 950), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+	StationaryCube cube6("Cube7", Vector2f(650, 650), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+	StationaryCube cube7("Cube8", Vector2f(200, 800), &spCube, vertexCube, 4, "Cube Images", Vector2f(32, 32), Vector2f(16, 16), 100000);
+
+	storage.AddObject(&cube0);
+	storage.AddObject(&cube1);
+	storage.AddObject(&cube2);
+	storage.AddObject(&cube3);
+	storage.AddObject(&cube4);
+	storage.AddObject(&cube6);
+	storage.AddObject(&cube5);
+	storage.AddObject(&cube7);
 	
 	Vector2f g (0, 10);
 
@@ -102,9 +134,9 @@ int main()
 	{
 		time1 = clock.getElapsedTime().asSeconds();
 		dt = time1 - time2;
-		std::cout << 1.0 / (time1 - time2);
+		//std::cout << 1.0 / (time1 - time2);
 		time2 = time1;
-		std::cout << "\n";
+		//std::cout << "\n";
 
 		handlingEvent(&camera);
 		

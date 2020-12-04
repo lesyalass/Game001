@@ -27,6 +27,7 @@ float reducedMass(const float m1, const float m2)
 }
 
 
+
 class StorageImages
 {
 	String name;
@@ -119,7 +120,6 @@ public:
 };
 
 
-
 class Sprite          // What do we should to name it?
 {
 	int numberOfStorages;
@@ -198,6 +198,8 @@ public:
 	}
 	*/
 };
+
+
 
 class GameObject
 {
@@ -350,11 +352,9 @@ public:
 };
 
 
-
-
-
 class StdGameObject: public GameObject
 {
+protected:
 
 	Sprite* sprite;
 	String nameCurrentImage;
@@ -365,15 +365,17 @@ class StdGameObject: public GameObject
 	float timeFromLastChangeImage = 0;
 	float timeBeetweenImages = 5;
 
-
 	//Vector2f velosity;
 	//Vector2f changeImpulse = Vector2f(0, 0);
 	//float mass;
 	//Vector2f size;
-	Vector2f centerMass;                    
+	Vector2f centerMass;
 	//Vector2f* vertexs;
 	//int numberOfVertex;
 
+	int hitPoints = 10;
+
+	StdGameObject() {};
 
 public:
 
@@ -536,6 +538,21 @@ public:
 		return centerMass + position;
 	}
 
+	Vector2f getInwardNormal(int numberVertex)
+	{
+		Vector2f v(0, 0);
+		if (numberVertex == 0)
+			v = this->getVertex(numberOfVertexs - 1) - this->getVertex(1);
+		if (numberVertex == (numberOfVertexs - 1))
+			v = this->getVertex(0) - this->getVertex(numberVertex - 1);
+		if ((numberVertex != 0) && (numberVertex != (numberOfVertexs - 1)))
+			v = this->getVertex(numberVertex - 1) - this->getVertex(numberVertex + 1);
+
+		Vector2f d(v.y, -v.x);
+		Vector2f a = this->getVertex(numberVertex) - centerMass;
+		return ((a * d) * d * (-1)).norm();
+	}
+
 	Vector2f isCollide(GameObject& gObj)
 	{
 		if ((position - gObj.position).mod() > (size + gObj.getSize()).mod())
@@ -574,14 +591,14 @@ public:
 			if (flag)
 			{
 				//std::cout << (this->getVertex(numberVertex) - centerMass) << '\n';
-				vectorCollision += (this->getVertex(numberVertex) - centerMass).norm();
+				vectorCollision += this->getInwardNormal(numberVertex);
 			}
 		}
 
 		if (vectorCollision.mod() == 0)
 			return vectorCollision;
 
-		return (-1) * vectorCollision.norm();
+		return vectorCollision.norm();
 	}
 
 	void resolutionCollision(GameObject& gObj, Vector2f vectorCollision)
@@ -627,6 +644,18 @@ public:
 	void gravitation(Vector2f g, float dt)
 	{
 		changeImpulse += g * mass * dt;
+	}
+
+
+
+	void getDamage(int damage)
+	{
+		hitPoints -= damage;
+	}
+
+	int getHitPoints()
+	{
+		return hitPoints;
 	}
 };
 
@@ -717,5 +746,299 @@ public:
 	void resolutionCollision(GameObject& gObj, Vector2f vectorCollision)
 	{
 		return;
+	}
+};
+
+
+class StationaryCube : public GameObject
+{
+
+	Sprite* sprite;
+	String nameCurrentImage;
+	int indexCurrentImage;
+	int characteristicSize;
+	sf::Texture texture;
+	sf::RectangleShape shape;
+	float timeFromLastChangeImage = 0;
+	float timeBeetweenImages = 5;
+
+
+	//Vector2f velosity;
+	//Vector2f changeImpulse = Vector2f(0, 0);
+	//float mass;
+	//Vector2f size;
+	Vector2f centerMass;
+	//Vector2f* vertexs;
+	//int numberOfVertex;
+
+
+public:
+
+	//Vector2f changeImpulse = Vector2f(0, 0);
+
+	void setSize(Vector2f size)
+	{
+		this->size = size;
+		shape.setSize(sf::Vector2f(size.x, size.y));
+		characteristicSize = max(size.x, size.y);
+	}
+
+	StationaryCube(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs,
+		int numberOfVertexs, String nameFistStImages, Vector2f size, Vector2f centerMass, int mass)
+	{
+		//std::cout << "StdGameObject1" << '\n';
+
+		this->name = name;
+		this->position = position;
+		//rightBottomCorrow = position + size;
+		this->sprite = sprite;
+		this->numberOfVertexs = numberOfVertexs;
+		this->vertexs = new Vector2f[numberOfVertexs];
+		this->centerMass = centerMass;
+		this->mass = mass;
+
+		for (int i = 0; i < numberOfVertexs; i++)
+		{
+			this->vertexs[i] = vertexs[i];
+		}
+
+		nameCurrentImage = nameFistStImages;
+
+		//std::cout << nameCurrentImage << '\n';
+
+		indexCurrentImage = 0;
+
+		texture.create(size.x, size.y);
+		texture.update(*(sprite->getImage(nameFistStImages, 0)));   //!!!!!
+		shape.setTexture(&texture);
+
+		this->setSize(size);
+	}
+
+	StationaryCube(StationaryCube& gameObject)
+	{
+		std::cout << "StdGameObject2" << '\n';
+
+		delete[] vertexs;
+		sprite = gameObject.sprite;
+		numberOfVertexs = gameObject.numberOfVertexs;
+		vertexs = new Vector2f[numberOfVertexs];
+		for (int i = 0; i < numberOfVertexs; i++)
+			this->vertexs[i] = vertexs[i];
+
+		this->nameCurrentImage = nameCurrentImage;
+		this->indexCurrentImage = indexCurrentImage;
+
+		texture.loadFromImage(*(sprite->getImage(nameCurrentImage, indexCurrentImage)));
+		shape.setTexture(&texture);
+
+		this->setSize(gameObject.size);
+		//this->rightBottomCorrow = position + size;
+	}
+
+	~StationaryCube()
+	{
+		//std::cout << "dStdGameObject : " << name << '\n';
+
+		delete[] vertexs;
+	}
+
+	StationaryCube& operator = (StationaryCube& gameObject)
+	{
+		delete[] vertexs;
+		sprite = gameObject.sprite;
+		numberOfVertexs = gameObject.numberOfVertexs;
+		vertexs = new Vector2f[numberOfVertexs];
+		nameCurrentImage = gameObject.nameCurrentImage;
+		indexCurrentImage = gameObject.indexCurrentImage;
+		size = gameObject.size;
+		//rightBottomCorrow = position + size;
+		for (int i = 0; i < numberOfVertexs; i++)
+			this->vertexs[i] = vertexs[i];
+	}
+
+	void setCurrentImage(String name, int index)
+	{
+		//std::cout << "setCurrentImage" << '\n';
+
+		nameCurrentImage = name;
+		indexCurrentImage = index;
+		sf::Image im = *(sprite->getImage(name, index));
+	}
+
+	void setCurrentImageIndex(int index)
+	{
+		//std::cout << "setCurrentImageIndex" << '\n';
+
+		indexCurrentImage = index;
+		sf::Image im = *(sprite->getImage(nameCurrentImage, index));
+	}
+
+	void changeTexture(String nameStorage, const int index)
+	{
+		//std::cout << "changeTexture" << '\n';
+
+		nameCurrentImage = nameStorage;
+		indexCurrentImage = index;
+		texture.loadFromImage(*(sprite->getImage(nameStorage, index)));
+	}
+
+	void changeTexture()
+	{
+		//std::cout << "changeTexture" << '\n';
+
+		texture.loadFromImage(*(sprite->getImage(nameCurrentImage, indexCurrentImage)));
+	}
+
+	void draw(Camera* camera)
+	{
+		//std::cout << nameCurrentImage << '\n';
+
+		//this->changeTexture(nameCurrentImage, indexCurrentImage);
+		//this->shape.setPosition(position.x, position.y);
+		camera->draw(&shape, sf::Vector2f(position.x, position.y), characteristicSize);
+	}
+
+
+
+	Vector2f getPositionVertex(int number)
+	{
+		//std::cout << number << ' ' << numberOfVertexs << '\n';
+		assert(number < numberOfVertexs);
+		return vertexs[number] + position;
+	}
+
+	Vector2f getVertex(int number)
+	{
+		assert(number < numberOfVertexs);
+		return vertexs[number];
+	}
+
+	Vector2f getPositionCenter()
+	{
+		return centerMass + position;
+	}
+};
+
+
+class Player : public StdGameObject
+{
+
+	String orientation = "right";
+
+public:
+
+	Player(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs,
+		int numberOfVertexs, String nameFistStImages, Vector2f size, Vector2f centerMass, int mass)
+	{
+		//std::cout << "StdGameObject1" << '\n';
+
+		this->name = name;
+		this->position = position;
+		//rightBottomCorrow = position + size;
+		this->sprite = sprite;
+		this->numberOfVertexs = numberOfVertexs;
+		this->vertexs = new Vector2f[numberOfVertexs];
+		this->centerMass = centerMass;
+		this->mass = mass;
+
+		for (int i = 0; i < numberOfVertexs; i++)
+		{
+			this->vertexs[i] = vertexs[i];
+		}
+
+		nameCurrentImage = nameFistStImages;
+
+		//std::cout << nameCurrentImage << '\n';
+
+		indexCurrentImage = 0;
+
+		texture.create(size.x, size.y);
+		texture.update(*(sprite->getImage(nameFistStImages, 0)));   //!!!!!
+		shape.setTexture(&texture);
+
+		this->setSize(size);
+	}
+
+	void resolutionCollision(GameObject& gObj, Vector2f vectorCollision)
+	{
+		if (vectorCollision.mod() == 0)
+			return;
+
+		if ((vectorCollision.y < 0) && (vectorCollision.x == 0))
+		{
+			changeImpulse = (-1) * mass * velosity;
+			return;
+		}
+
+		float progVelosity1 = velosity.projection(vectorCollision);
+		float progVelosity2 = gObj.getVelosity().projection(vectorCollision);
+
+		float redMass = reducedMass(mass, gObj.getMass());
+
+		float dp = redMass * (progVelosity1 - progVelosity2);
+
+		if (dp < 0)
+			changeImpulse -= 2 * dp * vectorCollision;
+	}
+};
+
+
+class Knight : public StdGameObject
+{
+public:
+
+	Knight(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs,
+		int numberOfVertexs, String nameFistStImages, Vector2f size, Vector2f centerMass, int mass)
+	{
+		//std::cout << "StdGameObject1" << '\n';
+
+		this->name = name;
+		this->position = position;
+		//rightBottomCorrow = position + size;
+		this->sprite = sprite;
+		this->numberOfVertexs = numberOfVertexs;
+		this->vertexs = new Vector2f[numberOfVertexs];
+		this->centerMass = centerMass;
+		this->mass = mass;
+
+		for (int i = 0; i < numberOfVertexs; i++)
+		{
+			this->vertexs[i] = vertexs[i];
+		}
+
+		nameCurrentImage = nameFistStImages;
+
+		//std::cout << nameCurrentImage << '\n';
+
+		indexCurrentImage = 0;
+
+		texture.create(size.x, size.y);
+		texture.update(*(sprite->getImage(nameFistStImages, 0)));   //!!!!!
+		shape.setTexture(&texture);
+
+		this->setSize(size);
+	}
+
+	void resolutionCollision(GameObject& gObj, Vector2f vectorCollision)
+	{
+		if (vectorCollision.mod() == 0)
+			return;
+
+		if ((vectorCollision.y < 0) && (vectorCollision.x == 0))
+		{
+			changeImpulse = (-1) * mass * velosity;
+			return;
+		}
+
+		float progVelosity1 = velosity.projection(vectorCollision);
+		float progVelosity2 = gObj.getVelosity().projection(vectorCollision);
+
+		float redMass = reducedMass(mass, gObj.getMass());
+
+		float dp = redMass * (progVelosity1 - progVelosity2);
+
+		if (dp < 0)
+			changeImpulse -= 2 * dp * vectorCollision;
 	}
 };

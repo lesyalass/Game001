@@ -32,5 +32,8 @@
     <ClInclude Include="GameObjects.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Logic.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
