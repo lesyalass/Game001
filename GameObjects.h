@@ -1,32 +1,13 @@
 #pragma once
 #include "Vector2f.h"
 #include "String.h"
-
+#include <cmath>
 
 class Camera;
 class GameObject;
 class Sprite;
 class StdGameObject;
 class StorageImages;
-
-
-float max(float a, float b)
-{
-	if (a > b)
-		return a;
-	return b;
-}
-
-float reducedMass(const float m1, const float m2)
-{
-	if (m1 == 0 || m2 == 0)
-		return 0;
-
-	float rm = (m1 * m2) / (m1 + m2);
-	return rm;
-}
-
-
 
 class StorageImages
 {
@@ -209,6 +190,16 @@ protected:
 	Vector2f size = Vector2f(0, 0);
 	Vector2f velosity = Vector2f(0, 0);
 	float mass = 1;
+	float reducedMass(const float m1, const float m2)
+	{
+		if (m1 == 0 || m2 == 0)
+		{
+			return 0;
+		}
+		float rm = (m1 * m2) / (m1 + m2);
+		return rm;
+	}
+
 public:
 	Vector2f position;
 	String name;
@@ -385,7 +376,7 @@ public:
 	{
 		this->size = size;
 		shape.setSize(sf::Vector2f(size.x, size.y));
-		characteristicSize = max(size.x, size.y);
+		characteristicSize = std::max(size.x, size.y);
 	}
 
 	StdGameObject(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs, 
@@ -662,15 +653,6 @@ public:
 
 class Wall : public GameObject
 {
-	//Vector2f velosity;
-	//Vector2f changeImpulse = Vector2f(0, 0);
-	//float mass;
-	//Vector2f size;
-	//Vector2f centerMass;
-	//Vector2f* vertexs;
-	//int numberOfVertex;
-
-
 public:
 
 	Wall(String name, Vector2f position, Vector2f* vertexs,
@@ -723,8 +705,6 @@ public:
 			this->vertexs[i] = vertexs[i];
 	}
 
-
-
 	Vector2f getPositionVertex(int number)
 	{
 		//std::cout << number << ' ' << numberOfVertexs << '\n';
@@ -762,7 +742,6 @@ class StationaryCube : public GameObject
 	float timeFromLastChangeImage = 0;
 	float timeBeetweenImages = 5;
 
-
 	//Vector2f velosity;
 	//Vector2f changeImpulse = Vector2f(0, 0);
 	//float mass;
@@ -771,16 +750,14 @@ class StationaryCube : public GameObject
 	//Vector2f* vertexs;
 	//int numberOfVertex;
 
-
 public:
-
 	//Vector2f changeImpulse = Vector2f(0, 0);
 
 	void setSize(Vector2f size)
 	{
 		this->size = size;
 		shape.setSize(sf::Vector2f(size.x, size.y));
-		characteristicSize = max(size.x, size.y);
+		characteristicSize = std::max(size.x, size.y);
 	}
 
 	StationaryCube(String name, Vector2f position, Sprite* sprite, Vector2f* vertexs,
@@ -898,8 +875,6 @@ public:
 		//this->shape.setPosition(position.x, position.y);
 		camera->draw(&shape, sf::Vector2f(position.x, position.y), characteristicSize);
 	}
-
-
 
 	Vector2f getPositionVertex(int number)
 	{

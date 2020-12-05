@@ -2,23 +2,9 @@
 #include <cassert>
 #include <iostream>
 
-int strLen(const char* str)
-{
-	int i = 0;
-	while (true)
-	{
-		if (str[i] == '\0')
-			return i;
-		i++;
-	}
-}
-
 class String
 {
-	char* str;
-	int memorySize;
-	int strSize;
-
+	
 public:
 
 	String()
@@ -174,54 +160,6 @@ public:
 		return string;
 	}
 
-	/*
-	String& _split(int index)
-	{
-		String string = String(strSize - index - 2);
-		int n = index;
-		for (int i = 0; i < strSize - n; ++i)
-		{
-			string.str[i] = str[i + n];
-		}
-		strSize = index + 1;
-		str[index] = '\0';
-		return string;
-	}
-
-	String** split(int index)
-	{
-		String** strings = new String*[2];
-		strings[0] = this;
-		strings[1] = &String(strSize - index - 2);
-		int n = index;
-		for (int i = 0; i < strSize - n; ++i)
-		{
-			strings[1]->str[i] = str[i + n];
-		}
-		strSize = index + 1;
-		str[index] = '\0';
-		return strings;
-	}
-
-	String** split(char c)
-	{
-		int i = 0;
-		int n = this->countChar(c);
-		String** strings = new String* [n];
-		int number = 1;
-		for (int i = strSize; i > 0; i -= 1)
-		{
-			if (str[i] == c)
-			{
-				strings[number] = &this->_split(i);
-				number += 1;
-			}
-		}
-		strings[0] = this;
-		return strings;
-	}
-	*/
-
 	String operator + (const String& string) const
 	{
 		int size = strSize + string.len();
@@ -234,7 +172,7 @@ public:
 		return retStr;
 	}
 
-	void operator += (const String& string)     //????????
+	void operator += (const String& string)    
 	{
 		int size = strSize + string.len();
 		if (size > memorySize)
@@ -259,13 +197,10 @@ public:
 		}
 	}
 
-	
-
-	char* c_str()                 // ???????????
+	char* c_str()                
 	{
 		return str;
 	}
-
 
 	bool foundStr(const char* strc)
 	{
@@ -305,7 +240,7 @@ public:
 				}
 			}
 			delete[] arr;
-			return true; //?????????????????????
+			return true; 
 		}
 		for (int i = 0; i < strSize; ++i)
 		{
@@ -319,16 +254,28 @@ public:
 		delete[] arr;
 		return false;
 	}
-};
 
-std::ostream& operator << (std::ostream& streamP , const String& string )
-{
-	for (int i = 0; i < string.len(); i++)
-		streamP << string[i];
-	return streamP;
-}
+	friend std::ostream& operator << (std::ostream& streamP , const String& string );
 
-int strCount(char* str, char n)
+private:
+
+	char* str;
+	int memorySize;
+	int strSize;
+
+	int strLen(const char* str)
+	{
+		int i = 0;
+		while (true)
+		{
+			if (str[i] == '\0')
+			{ 
+				return i;
+			}
+			i++;
+		}
+	}
+	int strCount(char* str, char n)
 {
 	int i = 0;
 	int count = 0;
@@ -343,8 +290,7 @@ int strCount(char* str, char n)
 		}
 	}
 }
-
-String arrCharMerge(char* str1, char* str2)
+	String arrCharMerge(char* str1, char* str2)
 {
 	int len = strLen(str1) + strLen(str2) + 1;
 	String string(len);
@@ -358,4 +304,11 @@ String arrCharMerge(char* str1, char* str2)
 	}
 	return string;
 }
+
+};
+
+
+
+
+
 

@@ -14,12 +14,7 @@ struct Node
 	Node* next;
 };
 
-std::ostream& operator << (std::ostream& streamP, const GameObject& object)
-{
-	streamP << object.position << ' ' << object.name << std::endl;
-	return streamP;
-}
-
+std::ostream& operator << (std::ostream& streamP, const GameObject& object);
 
 class Storage
 {
@@ -130,6 +125,7 @@ public:
 	}
 
 	friend class Iterator;
+	friend std::ostream& operator << (std::ostream& streamP, Storage& stor);
 };
 
 class Iterator
@@ -154,14 +150,4 @@ public:
 	}
 };
 
-std::ostream& operator << (std::ostream& streamP, Storage& stor)
-{
-	Iterator iter(&stor);
-	GameObject object = iter.stepIteration();
-	while (object.name != "NULL")
-	{
-		streamP << object << std::endl;
-		object = iter.stepIteration();
-	}
-	return streamP;
-}
+

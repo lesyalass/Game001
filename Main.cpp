@@ -5,6 +5,7 @@
 #include "String.h"
 #include "Vector2f.h"
 #include "Logic.h"
+#include "Manager.h"
 
 void handlingEvent(Camera* camera)
 {
@@ -63,7 +64,7 @@ int main()
 
 
 	String paints[1];
-	paints[0] = "036.png";
+	paints[0] = "../036.png";
 
 	StorageImages stIm("Test paint", 1, paints);
 
@@ -93,7 +94,7 @@ int main()
 
 
 	String namesPaintsCube[1];
-	namesPaintsCube[0] = "Cube.png";
+	namesPaintsCube[0] = "../Cube.png";
 
 	StorageImages stImCube("Cube Images", 1, namesPaintsCube);
 
@@ -142,15 +143,8 @@ int main()
 		
 		//std::cout << storage["Elve"].isCollide(storage["downWall"]) << '\n';
 
-		Iterator iter(&storage);
-		while (true)
-		{
-			GameObject& gameObject = iter.stepIteration();
-			if (gameObject.name == "NULL")
-				break;
-			gameObject.draw(&camera);
-			gameObject.animation(dt);
-		}
+		drawManager(&camera, &storage, dt);
+		//animationManager(dt, &storage);
 
 		Iterator iter2(&storage);
 		while (true)
